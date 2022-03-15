@@ -305,19 +305,24 @@ class ScheduleTimeBasedPartitionsDefinition(
         if self.schedule_type is ScheduleType.HOURLY:
             return lambda d: pendulum.instance(d).subtract(hours=self.offset, minutes=d.minute)
         elif self.schedule_type is ScheduleType.DAILY:
-            return lambda d: pendulum.instance(d).subtract(
-                days=self.offset, hours=d.hour, minutes=d.minute
-            )
+            return lambda d: pendulum.instance(d).at(0, 0, 0).subtract(days=self.offset)
         elif self.schedule_type is ScheduleType.WEEKLY:
             execution_day = cast(int, self.execution_day)
             day_difference = (execution_day - (self.start.weekday() + 1)) % 7
-            return lambda d: pendulum.instance(d).subtract(
-                weeks=self.offset, days=day_difference, hours=d.hour, minutes=d.minute
+            return (
+                lambda d: pendulum.instance(d)
+                .at(0, 0, 0)
+                .subtract(
+                    weeks=self.offset,
+                    days=day_difference,
+                )
             )
         elif self.schedule_type is ScheduleType.MONTHLY:
             execution_day = cast(int, self.execution_day)
-            return lambda d: pendulum.instance(d).subtract(
-                months=self.offset, days=execution_day - 1, hours=d.hour, minutes=d.minute
+            return (
+                lambda d: pendulum.instance(d)
+                .at(0, 0, 0)
+                .subtract(months=self.offset, days=execution_day - 1)
             )
         else:
             check.assert_never(self.schedule_type)
